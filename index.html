@@ -1,0 +1,247 @@
+import React, { useState } from 'react';
+import { 
+  View, 
+  Text, 
+  TextInput, 
+  TouchableOpacity, 
+  FlatList, 
+  StyleSheet, 
+  SafeAreaView,
+  KeyboardAvoidingView,
+  Platform,
+  StatusBar
+} from 'react-native';
+
+const App = () => {
+  const [messages, setMessages] = useState([
+    { id: '1', text: 'Hello! I am your assistant. How can I help you today?', isUser: false }
+  ]);
+  const [inputText, setInputText] = useState('');
+
+  const handleSend = () => {
+    if (inputText.trim() === '') return;
+
+    const userMessage = { 
+      id: Date.now().toString(), 
+      text: inputText, 
+      isUser: true 
+    };
+    
+    setMessages(prev => [...prev, userMessage]);
+    setInputText('');
+
+    setTimeout(() => {
+      const botResponse = getBotResponse(inputText);
+      const botMessage = { 
+        id: (Date.now() + 1).toString(), 
+        text: botResponse, 
+        isUser: false 
+      };
+      setMessages(prev => [...prev, botMessage]);
+    }, 1000);
+  };
+
+  const getBotResponse = (userInput) => {
+    const input = userInput.toLowerCase();
+    
+    if (input.includes('hello') || input.includes('hi')) {
+      return 'Hello! Nice to meet you!';
+    } else if (input.includes('how are you')) {
+      return "I'm doing great! Thank you for asking.";
+    } else if (input.includes('name')) {
+      return "I'm your friendly assistant!";
+    } else if (input.includes('thank')) {
+      return "You're welcome! Happy to help!";
+    } else if (input.includes('bye') || input.includes('goodbye')) {
+      return 'Goodbye! Have a wonderful day!';
+    } else if (input.includes('help')) {
+      return "I can chat with you, answer questions, or just keep you company!";
+    } else if (input.includes('weather')) {
+      return "I don't have access to real-time weather data, but I hope it's nice where you are!";
+    } else if (input.includes('joke')) {
+      return "Why don't scientists trust atoms? Because they make up everything!";
+    } else {
+      return "That's interesting! Can you tell me more about that?";
+    }
+  };
+
+  const renderMessageItem = ({ item }) => (
+    <View style={[
+      styles.messageContainer,
+      item.isUser ? styles.userContainer : styles.botContainer
+    ]}>
+      <View style={[
+        styles.messageBubble,
+        item.isUser ? styles.userBubble : styles.botBubble
+      ]}>
+        <Text style={[
+          styles.messageText,
+          item.isUser ? styles.userText : styles.botText
+        ]}>
+          {item.text}
+        </Text>
+      </View>
+    </View>
+  );
+
+  return (
+    <SafeAreaView style={styles.safeArea}>
+      <StatusBar barStyle="light-content" />
+      
+      <View style={styles.header}>
+        <Text style={styles.headerTitle}>Chat Assistant</Text>
+        <Text style={styles.headerSubtitle}>Always here to help</Text>
+      </View>
+
+      <FlatList
+        data={messages}
+        renderItem={renderMessageItem}
+        keyExtractor={item => item.id}
+        style={styles.messagesList}
+        contentContainerStyle={styles.messagesContent}
+      />
+
+      <KeyboardAvoidingView 
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        style={styles.inputSection}
+      >
+        <View style={styles.inputWrapper}>
+          <TextInput
+            style={styles.textInput}
+            value={inputText}
+            onChangeText={setInputText}
+            placeholder="Type your message here..."
+            placeholderTextColor="#999"
+            multiline
+            maxLength={500}
+          />
+          <TouchableOpacity 
+            style={[
+              styles.sendButton,
+              inputText.trim() ? styles.sendButtonActive : styles.sendButtonInactive
+            ]} 
+            onPress={handleSend}
+            disabled={!inputText.trim()}
+          >
+            <Text style={styles.sendButtonText}>Send</Text>
+          </TouchableOpacity>
+        </View>
+      </KeyboardAvoidingView>
+    </SafeAreaView>
+  );
+};
+
+const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: '#FFFFFF',
+  },
+  header: {
+    backgroundColor: '#6366F1',
+    paddingVertical: 16,
+    paddingHorizontal: 20,
+    alignItems: 'center',
+    borderBottomLeftRadius: 20,
+    borderBottomRightRadius: 20,
+    elevation: 4,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+  },
+  headerTitle: {
+    fontSize: 22,
+    fontWeight: 'bold',
+    color: '#FFFFFF',
+    marginBottom: 4,
+  },
+  headerSubtitle: {
+    fontSize: 14,
+    color: '#E0E7FF',
+  },
+  messagesList: {
+    flex: 1,
+    backgroundColor: '#F8FAFC',
+  },
+  messagesContent: {
+    paddingVertical: 16,
+    paddingHorizontal: 12,
+  },
+  messageContainer: {
+    marginBottom: 12,
+  },
+  userContainer: {
+    alignItems: 'flex-end',
+  },
+  botContainer: {
+    alignItems: 'flex-start',
+  },
+  messageBubble: {
+    maxWidth: '80%',
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 20,
+  },
+  userBubble: {
+    backgroundColor: '#6366F1',
+    borderBottomRightRadius: 4,
+  },
+  botBubble: {
+    backgroundColor: '#FFFFFF',
+    borderBottomLeftRadius: 4,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+  },
+  messageText: {
+    fontSize: 16,
+    lineHeight: 20,
+  },
+  userText: {
+    color: '#FFFFFF',
+  },
+  botText: {
+    color: '#334155',
+  },
+  inputSection: {
+    backgroundColor: '#FFFFFF',
+    borderTopWidth: 1,
+    borderTopColor: '#E2E8F0',
+  },
+  inputWrapper: {
+    flexDirection: 'row',
+    padding: 16,
+    alignItems: 'flex-end',
+  },
+  textInput: {
+    flex: 1,
+    borderWidth: 1,
+    borderColor: '#D1D5DB',
+    borderRadius: 24,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    marginRight: 12,
+    fontSize: 16,
+    maxHeight: 100,
+    backgroundColor: '#F9FAFB',
+  },
+  sendButton: {
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderRadius: 20,
+    minWidth: 60,
+    alignItems: 'center',
+  },
+  sendButtonActive: {
+    backgroundColor: '#6366F1',
+  },
+  sendButtonInactive: {
+    backgroundColor: '#9CA3AF',
+  },
+  sendButtonText: {
+    color: '#FFFFFF',
+    fontWeight: '600',
+    fontSize: 16,
+  },
+});
+
+export default App;
